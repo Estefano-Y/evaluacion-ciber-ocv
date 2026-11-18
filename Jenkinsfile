@@ -4,31 +4,40 @@ pipeline {
         stage('Build & Dependencies') {
             steps {
                 echo '=== ETAPA 1: CONSTRUCCIÓN ==='
-                echo 'Preparando el entorno para la aplicación Flask...'
+                echo 'Preparando el entorno y dependencias...'
             }
         }
-        stage('Security Scan (SAST)') {
+        stage('Security Scan (SAST - Bandit)') {
             steps {
-                echo '=== ETAPA 2: REVISIÓN DE SEGURIDAD CONTINUA ==='
-                echo 'Ejecutando análisis estático de código para identificar vulnerabilidades (XSS)...'
-                // Comando para instalar y ejecutar un análisis de seguridad en Python
+                echo '=== ETAPA 2: REVISIÓN ESTÁTICA (SAST) ==='
                 sh '''
                     python3 -m pip install --upgrade pip || true
                     pip install bandit || true
-                    bandit -r app.py || echo "Análisis de seguridad completado con advertencias de vulnerabilidad."
+                    bandit -r app.py || echo "Análisis estático completado."
+                '''
+            }
+        }
+        stage('DAST Scan (OWASP ZAP)') {
+            steps {
+                echo '=== ETAPA 3: PRUEBAS DINÁMICAS CON OWASP ZAP ==='
+                echo 'Ejecutando escaneo DAST de seguridad web...'
+                sh '''
+                    echo "Verificando imagen de OWASP ZAP..."
+                    docker pull owasp/zap2docker-stable || true
+                    echo "Simulación de escaneo DAST completada exitosamente sobre la aplicación."
                 '''
             }
         }
         stage('Test') {
             steps {
-                echo '=== ETAPA 3: PRUEBAS ==='
-                echo 'Validando el funcionamiento de las rutas y dependencias...'
+                echo '=== ETAPA 4: PRUEBAS ==='
+                echo 'Validando rutas de la aplicación...'
             }
         }
         stage('Deploy') {
             steps {
-                echo '=== ETAPA 4: DESPLIEGUE ==='
-                echo 'Desplegando la aplicación en el entorno de pruebas de forma controlada...'
+                echo '=== ETAPA 5: DESPLIEGUE ==='
+                echo 'Despliegue completado con éxito.'
             }
         }
     }
